@@ -1,0 +1,28 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+first:
+  id:                   1
+  name:                 first
+  host:                 localhost
+  port:                 389
+  base_dn:              ou=VMFR,o=VMCH
+  scope:                sub
+  object_class:         inetOrgPerson
+  login_attribute:      cn
+  email_attribute:      mail
+  given_name_attribute: given_name
+  surname_attribute:    sn
+  create_<%= model_controller_plural_name %>:         false
+  
+another:
+  id:                   2
+  name:                 another
+  host:                 localhost
+  port:                 389
+  base_dn:              ou=VMFR,o=VMCH
+  scope:                sub
+  object_class:         inetOrgPerson
+  login_attribute:      cn
+  email_attribute:      mail
+  given_name_attribute: given_name
+  surname_attribute:    sn
+  create_<%= model_controller_plural_name %>:         false

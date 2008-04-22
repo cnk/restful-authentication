@@ -1,0 +1,16 @@
+<tr>
+<%%= start_form_tag :controller => '/<%= model_controller_file_path %>', :action => 'new' %>
+  <%% @<%= model_controller_singular_name %> = <%= model_controller_singular_name %> %>
+  <%%= hidden_field '<%= model_controller_singular_name %>', 'login' %>
+  <%%= hidden_field '<%= model_controller_singular_name %>', 'given_name' %>
+  <%%= hidden_field '<%= model_controller_singular_name %>', 'surname' %>
+  <%%= hidden_field '<%= model_controller_singular_name %>', 'email' %>
+  <%%= hidden_field '<%= model_controller_singular_name %>', 'distinguished_name' %>
+  <%%= hidden_field '<%= model_controller_singular_name %>', '<%= server_singular_name %>_id' %>
+  <td><%%= <%= model_controller_singular_name %>.login %></td>
+  <td><%%= <%= model_controller_singular_name %>.given_name %></td>
+  <td><%%= <%= model_controller_singular_name %>.surname %></td>
+  <td><%%= <%= model_controller_singular_name %>.distinguished_name %></td>
+  <td><%%= submit_tag 'Add' %></td>
+<%%= end_form_tag %>
+</tr>

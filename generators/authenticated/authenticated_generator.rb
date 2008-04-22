@@ -23,6 +23,21 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
                 :model_controller_plural_name
   alias_method  :model_controller_file_name,  :model_controller_singular_name
   alias_method  :model_controller_table_name, :model_controller_plural_name
+  attr_reader   :server_controller_name,
+                :server_controller_class_name,
+                :server_controller_singular_name,
+                :server_controller_plural_name,
+                :server_controller_table_name,
+                :server_controller_class_path,
+                :server_controller_file_path,
+                :server_controller_class_nesting,
+                :server_controller_class_nesting_depth
+  alias_method  :server_file_name, :server_controller_singular_name
+  alias_method  :server_class_name, :server_controller_class_name
+  alias_method  :server_singular_name, :server_controller_singular_name
+  alias_method  :server_plural_name, :server_controller_plural_name
+  alias_method  :server_controller_file_name, :server_controller_singular_name
+  alias_method  :server_table_name, :server_controller_plural_name
 
   def initialize(runtime_args, runtime_options = {})
     super
@@ -30,6 +45,7 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
     @rspec = has_rspec?
 
     @controller_name = args.shift || 'sessions'
+    @server_controller_name = args.shift || 'ldap_servers'
     @model_controller_name = @name.pluralize
 
     # sessions controller
@@ -52,6 +68,17 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
     else
       @model_controller_class_name = "#{@model_controller_class_nesting}::#{@model_controller_class_name_without_nesting}"
     end
+
+    # server controller
+    base_name, @server_controller_class_path, @server_controller_file_path, @server_controller_class_nesting, @server_controller_class_nesting_depth = extract_modules(@server_controller_name)
+    @server_controller_class_name_without_nesting, @server_controller_singular_name, @server_controller_plural_name = inflect_names(base_name)
+    @server_controller_table_name = ActiveRecord::Base.pluralize_table_names ? server_controller_plural_name : server_controller_singular_name
+
+    if @server_controller_class_nesting.empty?
+      @server_controller_class_name = @server_controller_class_name_without_nesting
+    else
+      @server_controller_class_name = "#{@server_controller_class_nesting}::#{@server_controller_class_name_without_nesting}"
+    end
   end
 
   def manifest
@@ -62,6 +89,11 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
       m.class_collisions model_controller_class_path, "#{model_controller_class_name}Controller", # Model Controller
                                                       "#{model_controller_class_name}Helper"
       m.class_collisions class_path,                  "#{class_name}", "#{class_name}Mailer", "#{class_name}MailerTest", "#{class_name}Observer"
+      m.class_collisions server_controller_class_path, "#{server_controller_class_name}Controller", 
+                                                       "#{server_controller_class_name}ControllerTest", 
+                                                       "#{server_controller_class_name}Helper",
+                                                       "#{server_controller_class_name}",
+                                                       "#{server_controller_class_name}Test"
       m.class_collisions [], 'AuthenticatedSystem', 'AuthenticatedTestHelper'
 
       # Controller, helper, views, and test directories.
@@ -76,15 +108,25 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
       m.directory File.join('app/helpers', model_controller_class_path)
       m.directory File.join('app/views', model_controller_class_path, model_controller_file_name)
 
+      m.directory File.join('app/models', server_controller_class_path)
+      m.directory File.join('app/controllers', server_controller_class_path)
+      m.directory File.join('app/helpers', server_controller_class_path)
+      m.directory File.join('app/views', server_controller_class_path, server_controller_file_name)
+
       if @rspec
         m.directory File.join('spec/controllers', controller_class_path)
+        m.directory File.join('spec/controllers', server_controller_class_path)
         m.directory File.join('spec/controllers', model_controller_class_path)
         m.directory File.join('spec/models', class_path)
+        m.directory File.join('spec/models', server_controller_class_path)
+        m.directory File.join('spec/fixtures', server_controller_class_path)
         m.directory File.join('spec/fixtures', class_path)
       else
         m.directory File.join('test/functional', controller_class_path)
         m.directory File.join('test/functional', model_controller_class_path)
+        m.directory File.join('test/functional', server_controller_class_path)
         m.directory File.join('test/unit', class_path)
+        m.directory File.join('test/unit', server_controller_class_path)
       end
 
       m.template 'model.rb',
@@ -176,14 +218,57 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
         end
       end
 
+      m.template 'server_model.rb',
+                  File.join('app/models',
+                            server_controller_class_path,
+                            "#{server_file_name}.rb")
+
+      m.template 'server_controller.rb',
+                  File.join('app/controllers',
+                            server_controller_class_path,
+                            "#{server_controller_file_name}_controller.rb")
+
+      m.template 'server_functional_test.rb',
+                  File.join('test/functional',
+                            server_controller_class_path,
+                            "#{server_controller_file_name}_controller_test.rb")
+
+      m.template 'server_helper.rb',
+                  File.join('app/helpers',
+                            server_controller_class_path,
+                            "#{server_controller_file_name}_helper.rb")
+
+      m.template 'server_unit_test.rb',
+                  File.join('test/unit',
+                            server_controller_class_path,
+                            "#{server_file_name}_test.rb")
+
+      m.template 'server_fixtures.yml',
+                  File.join('test/fixtures',
+                            "#{server_controller_table_name}.yml")
+
+      # Controller templates
+      %w( _form edit list new show ).each do |action|
+        m.template "server_#{action}.rhtml",
+                   File.join('app/views', server_controller_class_path, server_controller_file_name, "#{action}.rhtml")
+      end
+      m.template "server__user.rhtml",
+                   File.join('app/views', server_controller_class_path, server_controller_file_name, "_#{model_controller_singular_name}.rhtml")
+      m.template "server_search_user.rhtml",
+                   File.join('app/views', server_controller_class_path, server_controller_file_name, "search_#{model_controller_singular_name}.rhtml")
+
       unless options[:skip_migration]
         m.migration_template 'migration.rb', 'db/migrate', :assigns => {
           :migration_name => "Create#{class_name.pluralize.gsub(/::/, '')}"
         }, :migration_file_name => "create_#{file_path.gsub(/\//, '_').pluralize}"
+        m.migration_template 'server_migration.rb', 'db/migrate', :assigns => {
+          :migration_name => "Create#{server_controller_file_path.gsub(/\//, '_').pluralize.camelize}"
+        }, :migration_file_name => "create_#{server_controller_file_path.gsub(/\//, '_').pluralize}"
       end
       
       m.route_resource  controller_singular_name
       m.route_resources model_controller_plural_name
+      m.route_resources server_controller_plural_name
     end
 
     action = nil
