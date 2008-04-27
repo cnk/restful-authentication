@@ -1,0 +1,8 @@
+<%% for column in <%= class_name %>.content_columns %>
+<p>
+  <b><%%= column.human_name %>:</b> <%%=h @<%= model_controller_singular_name %>.send(column.name) %>
+</p>
+<%% end %>
+
+<%%= link_to 'Edit', edit_<%= file_name %>_path %> |
+<%%= link_to 'Back', <%= model_controller_plural_name %>_path %>

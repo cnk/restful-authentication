@@ -1,0 +1,8 @@
+<%% for column in <%= server_class_name %>.content_columns %>
+<p>
+  <b><%%= column.human_name %>:</b> <%%=h @<%= server_controller_singular_name %>.send(column.name) %>
+</p>
+<%% end %>
+
+<%%= link_to 'Edit', edit_<%= server_controller_singular_name %>_path(@<%= server_controller_singular_name %>) %> |
+<%%= link_to 'Back', <%= server_controller_plural_name %>_path %>

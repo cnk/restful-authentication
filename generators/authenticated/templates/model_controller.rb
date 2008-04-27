@@ -1,14 +1,30 @@
 class <%= model_controller_class_name %>Controller < ApplicationController
   # Be sure to include AuthenticationSystem in Application Controller instead
   include AuthenticatedSystem
+
+  # before_filter :login_required, :except => [ :new, :create ]
+
+  layout "authenticated"
+
   <% if options[:stateful] %>
   # Protect these actions behind an admin login
   # before_filter :admin_required, :only => [:suspend, :unsuspend, :destroy, :purge]
   before_filter :find_<%= file_name %>, :only => [:suspend, :unsuspend, :destroy, :purge]
   <% end %>
 
+  def index
+    @<%= model_controller_plural_name %> = <%= class_name %>.find(:all <% if options[:ldap_capable] -%>, :include => :<%= server_singular_name %><% end -%>)
+  end 
+
+  def show 
+    @<%= model_controller_singular_name %> = <%= class_name %>.find(params[:id])      
+  end                                                            
+
   # render new.rhtml
   def new
+    <% if options[:ldap_capable] -%>@<%= file_name %> = <%= class_name %>.new(params[:user])
+    @server_name = <%= server_class_name %>.find(@<%= file_name %>.<%= server_singular_name %>_id).name unless @<%= file_name %>.<%= server_singular_name %>_id.nil? <% else -%>
+    @<%= file_name %> = <%= class_name %>.new <% end %>
   end
 
   def create
@@ -56,10 +72,45 @@ class <%= model_controller_class_name %>Controller < ApplicationController
     @<%= file_name %>.destroy
     redirect_to <%= table_name %>_path
   end
+<% end -%>
 
+  # render edit.rhtml
+  def edit
+    @<%= file_name %> = <%= class_name %>.find(params[:id])
+    <% if options[:ldap_capable] -%>@server_name = <%= server_class_name %>.find(@<%= file_name %>.<%= server_singular_name %>_id).name unless @<%= file_name %>.<%= server_singular_name %>_id.nil? <% end -%>
+  end
+
+  def update                                              
+    @<%= file_name %> = <%= class_name %>.find(params[:id]) 
+    if @<%= file_name %>.update_attributes(params[:<%= file_name %>]) 
+      flash[:notice] = '<%= file_name.humanize %> was successfully updated.' 
+      redirect_to :action => 'show', :id => @<%= file_name %> 
+    else 
+      render :action => 'edit'                         
+    end                                       
+  end
+
+  def destroy 
+    <%= class_name %>.find(params[:id]).destroy 
+    redirect_to :action => 'list'                                               
+  end 
+
+   
+<% if options[:stateful] %>
 protected
   def find_<%= file_name %>
     @<%= file_name %> = <%= class_name %>.find(params[:id])
   end
 <% end %>
+
+  def authorized?                                                
+    # Allow <%= file_name %> to edit their own data 
+    if ['edit', 'update', 'show'].include?(params[:action]) && params[:id].to_i == current_<%= file_name %>.id 
+      authorized = true                             
+    else 
+      authorized = false 
+    end 
+    authorized 
+  end 
+
 end

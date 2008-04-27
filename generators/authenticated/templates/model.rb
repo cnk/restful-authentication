@@ -3,7 +3,9 @@ class <%= class_name %> < ActiveRecord::Base
   # Virtual attribute for the unencrypted password
   attr_accessor :password
 
-  validates_presence_of     :login, :email
+  <% if options[:ldap_capable] -%>belongs_to :<%= server_controller_singular_name -%><% end -%>
+
+  validates_presence_of     :login, :email, :given_name, :surname
   validates_presence_of     :password,                   :if => :password_required?
   validates_presence_of     :password_confirmation,      :if => :password_required?
   validates_length_of       :password, :within => 4..40, :if => :password_required?
@@ -15,7 +17,7 @@ class <%= class_name %> < ActiveRecord::Base
   <% if options[:include_activation] && !options[:stateful] %>before_create :make_activation_code <% end %>
   # prevents a user from submitting a crafted form that bypasses activation
   # anything else you want your user to change should be added here.
-  attr_accessible :login, :email, :password, :password_confirmation
+  attr_accessible :login, :email, :surname, :given_name, :distinguished_name, :ldap_server_id, :password, :password_confirmation
 <% if options[:stateful] %>
   acts_as_state_machine :initial => :pending
   state :passive
@@ -78,11 +80,25 @@ class <%= class_name %> < ActiveRecord::Base
   def encrypt(password)
     self.class.encrypt(password, salt)
   end
+<% if options[:ldap_capable] %>
+  def ldap_user?
+     <%= server_controller_singular_name -%>_id.nil? ? false : true
+  end
 
+  def authenticated?(password)
+    authenticated = false
+    if ldap_user?
+      authenticated = self.<%= server_controller_singular_name -%>.authenticated?(self.distinguished_name, password)
+    else
+      authenticated = self.crypted_password == encrypt(password)
+    end
+    authenticated
+  end
+<% else %>
   def authenticated?(password)
     crypted_password == encrypt(password)
   end
-
+<% end %>
   def remember_token?
     remember_token_expires_at && Time.now.utc < remember_token_expires_at 
   end
@@ -107,12 +123,12 @@ class <%= class_name %> < ActiveRecord::Base
     self.remember_token            = nil
     save(false)
   end
-
+<% if options[:include_activation] %>
   # Returns true if the user has just been activated.
   def recently_activated?
     @activated
   end
-
+<% end %>
   protected
     # before filter 
     def encrypt_password
@@ -122,7 +138,11 @@ class <%= class_name %> < ActiveRecord::Base
     end
       
     def password_required?
+    <% if options[:ldap_capable] -%>
+      (ldap_server_id.nil? && crypted_password.blank?) || !password.blank? 
+    <% else -%>
       crypted_password.blank? || !password.blank?
+    <% end -%>
     end
     <% if options[:include_activation] %>
     def make_activation_code

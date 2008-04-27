@@ -13,15 +13,12 @@
     <td><%%=h <%= server_singular_name %>.host %></td>
     <td><%%=h <%= server_singular_name %>.port %></td>
     <td><%%= link_to 'Search <%= model_controller_singular_name.humanize %>', :action => 'search_<%= model_controller_singular_name %>', :id => <%= server_singular_name %> %></td>
-    <td><%%= link_to 'Show', :action => 'show', :id => <%= server_singular_name %> %></td>
-    <td><%%= link_to 'Edit', :action => 'edit', :id => <%= server_singular_name %> %></td>
-    <td><%%= link_to 'Destroy', { :action => 'destroy', :id => <%= server_singular_name %> }, :confirm => 'Are you sure?', :post => true %></td>
+    <td><%%= link_to 'Show', <%= server_singular_name %> %></td>
+    <td><%%= link_to 'Edit', edit_<%= server_singular_name %>_path(<%= server_singular_name %>) %></td>
+    <td><%%= link_to 'Destroy', <%= server_singular_name %>, :confirm => 'Are you sure?', :method => :delete %></td>
   </tr>
 <%% end %>
 </table>
-
-<%%= link_to 'Previous page', { :page => @<%= server_singular_name %>_pages.current.previous } if @<%= server_singular_name %>_pages.current.previous %>
-<%%= link_to 'Next page', { :page => @<%= server_singular_name %>_pages.current.next } if @<%= server_singular_name %>_pages.current.next %> 
 
 <br />
 

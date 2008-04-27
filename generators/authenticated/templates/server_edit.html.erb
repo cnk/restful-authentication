@@ -1,0 +1,9 @@
+<h1>Editing <%= server_singular_name.humanize %></h1>
+
+<%% form_for(@<%= server_singular_name %>) do |f| %>
+  <%%= render :partial => 'form', :locals => { :f => f } %>
+  <%%= submit_tag 'Edit' %>
+<%% end %>
+
+<%%= link_to 'Show', <%= server_controller_singular_name %>_path(@<%= server_controller_singular_name %>) %> |
+<%%= link_to 'Back', <%= server_controller_plural_name %>_path %>

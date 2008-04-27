@@ -1,0 +1,16 @@
+<tr>
+<%% form_tag :controller => '/<%= model_controller_file_path %>', :action => 'new' do %>
+  <%% @<%= file_name %> = <%= file_name %> %>
+  <%%= hidden_field '<%= file_name %>', 'login' %>
+  <%%= hidden_field '<%= file_name %>', 'given_name' %>
+  <%%= hidden_field '<%= file_name %>', 'surname' %>
+  <%%= hidden_field '<%= file_name %>', 'email' %>
+  <%%= hidden_field '<%= file_name %>', 'distinguished_name' %>
+  <%%= hidden_field '<%= file_name %>', '<%= server_singular_name %>_id' %>
+  <td><%%= <%= file_name %>.login %></td>
+  <td><%%= <%= file_name %>.given_name %></td>
+  <td><%%= <%= file_name %>.surname %></td>
+  <td><%%= <%= file_name %>.distinguished_name %></td>
+  <td><%%= submit_tag 'Add' %></td>
+<%% end %>
+</tr>

@@ -1,0 +1,35 @@
+<%%= error_messages_for '<%= file_name %>' %>
+
+<!--[form:<%= file_name %>]-->
+<p><label for="<%= file_name %>_login">Login</label><br/>
+<%%= f.text_field 'login'  %></p>
+
+<p><label for="<%= file_name %>_given_name">Given name</label><br/>
+<%%= f.text_field 'given_name'  %></p>
+
+<p><label for="<%= file_name %>_surname">Surname</label><br/>
+<%%= f.text_field 'surname'  %></p>
+
+<p><label for="<%= file_name %>_email">Email</label><br/>
+<%%= f.text_field 'email'  %></p>
+
+<%% if @<%= file_name %>.<%= server_singular_name %>_id.nil? -%>
+
+  <p><label for="<%= file_name %>_password">Password</label><br/>
+  <%%= f.password_field 'password'  %></p>
+
+  <p><label for="<%= file_name %>_password_confirmation">Password confirmation</label><br />
+  <%%= f.password_field 'password_confirmation'  %></p>
+  
+<%% else -%>
+
+  <p>Distinguished name<br/>
+  <%%= f.text_field 'distinguished_name'  %></p>
+  
+  <p>Server name<br/>
+  <%%= @server_name %></p>
+  <%%= hidden_field '<%= file_name %>', '<%= server_singular_name %>_id' %>
+  
+<%% end -%>
+<!--[eoform:<%= file_name %>]-->
+

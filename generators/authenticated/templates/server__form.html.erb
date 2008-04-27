@@ -2,43 +2,43 @@
 
 <!--[form:<%= server_singular_name %>]-->
 <p><label for="<%= server_singular_name %>_name">Name</label><br/>
-<%%= text_field '<%= server_singular_name %>', 'name'  %></p>
+<%%= f.text_field  'name'  %></p>
 
 <p><label for="<%= server_singular_name %>_host">Host</label><br/>
-<%%= text_field '<%= server_singular_name %>', 'host'  %></p>
+<%%= f.text_field  'host'  %></p>
 
 <p><label for="<%= server_singular_name %>_port">Port</label><br/>
-<%%= text_field '<%= server_singular_name %>', 'port'  %></p>
+<%%= f.text_field  'port'  %></p>
 
 <p><label for="<%= server_singular_name %>_ssl">Use SSL?</label><br/>
-<%%= check_box '<%= server_singular_name %>', 'ssl'  %></p>
+<%%= f.check_box  'ssl'  %></p>
 
 <p><label for="<%= server_singular_name %>_bind_dn">Bind dn</label><br/>
-<%%= text_field '<%= server_singular_name %>', 'bind_dn'  %></p>
+<%%= f.text_field  'bind_dn'  %></p>
 
 <p><label for="<%= server_singular_name %>_bind_password">Bind password</label><br/>
-<%%= password_field '<%= server_singular_name %>', 'bind_password'  %></p>
+<%%= f.password_field  'bind_password'  %></p>
 
 <p><label for="<%= server_singular_name %>_base_dn">Base dn</label><br/>
-<%%= text_field '<%= server_singular_name %>', 'base_dn'  %></p>
+<%%= f.text_field  'base_dn'  %></p>
 
 <p><label for="<%= server_singular_name %>_scope">Scope</label><br/>
-<%%= text_field '<%= server_singular_name %>', 'scope'  %></p>
+<%%= f.text_field  'scope'  %></p>
 
 <p><label for="<%= server_singular_name %>_login_attribute">Login attribute</label><br/>
-<%%= text_field '<%= server_singular_name %>', 'login_attribute'  %></p>
+<%%= f.text_field  'login_attribute'  %></p>
 
 <p><label for="<%= server_singular_name %>_email_attribute">Email attribute</label><br/>
-<%%= text_field '<%= server_singular_name %>', 'email_attribute'  %></p>
+<%%= f.text_field  'email_attribute'  %></p>
 
 <p><label for="<%= server_singular_name %>_given_name_attribute">Given name attribute</label><br/>
-<%%= text_field '<%= server_singular_name %>', 'given_name_attribute'  %></p>
+<%%= f.text_field  'given_name_attribute'  %></p>
 
 <p><label for="<%= server_singular_name %>_surname_attribute">Surname attribute</label><br/>
-<%%= text_field '<%= server_singular_name %>', 'surname_attribute'  %></p>
+<%%= f.text_field  'surname_attribute'  %></p>
 
 <p><label for="<%= server_singular_name %>_create_<%= model_controller_plural_name %>">Create <%= model_controller_plural_name.humanize.downcase %> on successful login</label><br/>
-<%%= check_box '<%= server_singular_name %>', 'create_<%= model_controller_plural_name %>'  %></p>
+<%%= f.check_box  'create_<%= model_controller_plural_name %>'  %></p>
 
 <!--[eoform:<%= server_singular_name %>]-->
 

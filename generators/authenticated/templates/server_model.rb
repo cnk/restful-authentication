@@ -1,8 +1,12 @@
-require 'rubygems'
-require_gem 'ldap'
-require 'LDAP'
+# For this <%= server_class_name %> model to work, you will need to
+# install ruby/ldap and then transfer the following line to your site's
+# setup files. If you have an Oracle server or client installed on this
+# machine, please put this file at the very top of your environment.rb
+# file so the ruby ldap client is loaded before any Oracle drivers.
 
-class <%= server_controller_class_name %> < ActiveRecord::Base
+require 'ldap'
+
+class <%= server_class_name %> < ActiveRecord::Base
   validates_presence_of   :name, :host, :port, :base_dn, :scope,
     :login_attribute, :email_attribute, :given_name_attribute,
     :surname_attribute
@@ -28,7 +32,7 @@ class <%= server_controller_class_name %> < ActiveRecord::Base
     
     <%= model_controller_plural_name %> = []
     self.query(filter, attributes).each do |u|
-      <%= model_controller_plural_name %> << <%= model_controller_class_name %>.new({
+      <%= model_controller_plural_name %> << <%= class_name %>.new({
         :distinguished_name => u['dn'],
         :login => u[self.login_attribute],
         :given_name => u[self.given_name_attribute],
@@ -123,6 +127,6 @@ class <%= server_controller_class_name %> < ActiveRecord::Base
   end
   
   def dont_destroy_in_use_<%= server_singular_name %>
-    raise "Cannot destroy in use <%= server_singular_name.humanize %>" if <%= model_controller_class_name %>.count(:conditions => ["<%= server_singular_name %>_id = ?", id]) > 0
+    raise "Cannot destroy in use <%= server_singular_name.humanize %>" if <%= class_name %>.count(:conditions => ["<%= server_singular_name %>_id = ?", id]) > 0
   end
 end

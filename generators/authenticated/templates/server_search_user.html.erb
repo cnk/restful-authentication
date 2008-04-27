@@ -1,0 +1,16 @@
+<%% form_tag :id => @<%= server_singular_name %> do %>
+  <p><label for="search">Name</label><br/>
+  <%%= text_field_tag 'search'  %></p>
+  <%%= submit_tag 'Search' %>
+<%% end %>
+
+<table>
+  <tr>
+    <th>Login</th>
+    <th>Given name</th>
+    <th>Surname</th>
+    <th>Distinguished name</th>
+    <th>&nbsp</th>
+  </tr>
+  <%%= render :partial => '<%= file_name %>', :collection => @<%= model_controller_plural_name %> %>
+</table>

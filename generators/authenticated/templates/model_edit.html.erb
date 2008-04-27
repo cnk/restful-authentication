@@ -1,0 +1,9 @@
+<h1>Editing <%= model_controller_singular_name.humanize %></h1>
+
+<%% form_for(@<%= file_name %>) do |f| %>
+  <%%= render :partial => 'form', :locals => { :f => f } %>
+  <%%= submit_tag 'Edit' %>
+<%% end %>
+
+<%%= link_to 'Show', <%= file_name %>_path %> |
+<%%= link_to 'Back', <%= model_controller_plural_name %>_path %>

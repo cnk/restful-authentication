@@ -1,7 +1,8 @@
 require 'restful_authentication/rails_commands'
 class AuthenticatedGenerator < Rails::Generator::NamedBase
   default_options :skip_migration => false,
-                  :include_activation => false
+                  :include_activation => false,
+                  :ldap_capable => false
                   
   attr_reader   :controller_name,
                 :controller_class_path,
@@ -23,20 +24,20 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
                 :model_controller_plural_name
   alias_method  :model_controller_file_name,  :model_controller_singular_name
   alias_method  :model_controller_table_name, :model_controller_plural_name
-  attr_reader   :server_controller_name,
+  attr_reader   :server_class_name,
+                :server_controller_name,
                 :server_controller_class_name,
                 :server_controller_singular_name,
                 :server_controller_plural_name,
                 :server_controller_table_name,
                 :server_controller_class_path,
                 :server_controller_file_path,
+                :server_controller_file_name,
                 :server_controller_class_nesting,
                 :server_controller_class_nesting_depth
   alias_method  :server_file_name, :server_controller_singular_name
-  alias_method  :server_class_name, :server_controller_class_name
   alias_method  :server_singular_name, :server_controller_singular_name
   alias_method  :server_plural_name, :server_controller_plural_name
-  alias_method  :server_controller_file_name, :server_controller_singular_name
   alias_method  :server_table_name, :server_controller_plural_name
 
   def initialize(runtime_args, runtime_options = {})
@@ -71,8 +72,10 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
 
     # server controller
     base_name, @server_controller_class_path, @server_controller_file_path, @server_controller_class_nesting, @server_controller_class_nesting_depth = extract_modules(@server_controller_name)
-    @server_controller_class_name_without_nesting, @server_controller_singular_name, @server_controller_plural_name = inflect_names(base_name)
+    @server_controller_class_name_without_nesting, @server_controller_file_name, @server_controller_plural_name = inflect_names(base_name)
     @server_controller_table_name = ActiveRecord::Base.pluralize_table_names ? server_controller_plural_name : server_controller_singular_name
+    @server_controller_singular_name = @server_controller_file_name.singularize
+    @server_class_name = @server_controller_class_name_without_nesting.singularize
 
     if @server_controller_class_nesting.empty?
       @server_controller_class_name = @server_controller_class_name_without_nesting
@@ -127,6 +130,8 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
         m.directory File.join('test/functional', server_controller_class_path)
         m.directory File.join('test/unit', class_path)
         m.directory File.join('test/unit', server_controller_class_path)
+        m.directory File.join('test/fixtures', server_controller_class_path)
+        m.directory File.join('test/fixtures', class_path)
       end
 
       m.template 'model.rb',
@@ -206,9 +211,13 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
                             "#{model_controller_file_name}_helper.rb")
 
 
+      %w( _form edit index new show ).each do |action|
+        m.template "model_#{action}.html.erb",
+                   File.join('app/views', model_controller_class_path, model_controller_file_name, "#{action}.html.erb")
+      end
+
       # Controller templates
       m.template 'login.html.erb',  File.join('app/views', controller_class_path, controller_file_name, "new.html.erb")
-      m.template 'signup.html.erb', File.join('app/views', model_controller_class_path, model_controller_file_name, "new.html.erb")
 
       if options[:include_activation]
         # Mailer templates
@@ -218,57 +227,68 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
         end
       end
 
-      m.template 'server_model.rb',
-                  File.join('app/models',
-                            server_controller_class_path,
-                            "#{server_file_name}.rb")
+      # layout file                        
+      m.template "layout.html.erb", "app/views/layouts/authenticated.html.erb"
 
-      m.template 'server_controller.rb',
-                  File.join('app/controllers',
-                            server_controller_class_path,
-                            "#{server_controller_file_name}_controller.rb")
+      if options[:ldap_capable]
+        m.template 'server_model.rb',
+                    File.join('app/models',
+                              server_controller_class_path,
+                              "#{server_file_name}.rb")
 
-      m.template 'server_functional_test.rb',
-                  File.join('test/functional',
-                            server_controller_class_path,
-                            "#{server_controller_file_name}_controller_test.rb")
+        m.template 'server_controller.rb',
+                    File.join('app/controllers',
+                              server_controller_class_path,
+                              "#{server_controller_file_name}_controller.rb")
 
-      m.template 'server_helper.rb',
-                  File.join('app/helpers',
-                            server_controller_class_path,
-                            "#{server_controller_file_name}_helper.rb")
+        m.template 'server_functional_test.rb',
+                    File.join('test/functional',
+                              server_controller_class_path,
+                              "#{server_controller_file_name}_controller_test.rb")
 
-      m.template 'server_unit_test.rb',
-                  File.join('test/unit',
-                            server_controller_class_path,
-                            "#{server_file_name}_test.rb")
+        m.template 'server_helper.rb',
+                    File.join('app/helpers',
+                              server_controller_class_path,
+                              "#{server_controller_file_name}_helper.rb")
 
-      m.template 'server_fixtures.yml',
-                  File.join('test/fixtures',
-                            "#{server_controller_table_name}.yml")
+        m.template 'server_unit_test.rb',
+                    File.join('test/unit',
+                              server_controller_class_path,
+                              "#{server_file_name}_test.rb")
 
-      # Controller templates
-      %w( _form edit list new show ).each do |action|
-        m.template "server_#{action}.rhtml",
-                   File.join('app/views', server_controller_class_path, server_controller_file_name, "#{action}.rhtml")
+        m.template 'server_fixtures.yml',
+                    File.join('test/fixtures',
+                              "#{server_controller_table_name}.yml")
+
+        # Controller templates
+        %w( _form edit index new show ).each do |action|
+          m.template "server_#{action}.html.erb",
+                     File.join('app/views', server_controller_class_path, server_controller_file_name, "#{action}.html.erb")
+        end
+        m.template "server__user.html.erb",
+                     File.join('app/views', server_controller_class_path, server_controller_file_name, "_#{file_name}.html.erb")
+        m.template "server_search_user.html.erb",
+                     File.join('app/views', server_controller_class_path, server_controller_file_name, "search_#{model_controller_singular_name}.html.erb")
+
       end
-      m.template "server__user.rhtml",
-                   File.join('app/views', server_controller_class_path, server_controller_file_name, "_#{model_controller_singular_name}.rhtml")
-      m.template "server_search_user.rhtml",
-                   File.join('app/views', server_controller_class_path, server_controller_file_name, "search_#{model_controller_singular_name}.rhtml")
 
       unless options[:skip_migration]
         m.migration_template 'migration.rb', 'db/migrate', :assigns => {
           :migration_name => "Create#{class_name.pluralize.gsub(/::/, '')}"
         }, :migration_file_name => "create_#{file_path.gsub(/\//, '_').pluralize}"
-        m.migration_template 'server_migration.rb', 'db/migrate', :assigns => {
-          :migration_name => "Create#{server_controller_file_path.gsub(/\//, '_').pluralize.camelize}"
-        }, :migration_file_name => "create_#{server_controller_file_path.gsub(/\//, '_').pluralize}"
+
+        if options[:ldap_capable]                             
+          m.migration_template 'server_migration.rb', 'db/migrate', :assigns => {
+            :migration_name => "Create#{server_controller_file_path.gsub(/\//, '_').pluralize.camelize}"
+          }, :migration_file_name => "create_#{server_controller_file_path.gsub(/\//, '_').pluralize}"
+        end
       end
       
       m.route_resource  controller_singular_name
       m.route_resources model_controller_plural_name
-      m.route_resources server_controller_plural_name
+      if options[:ldap_capable]                             
+        m.route_resources server_controller_plural_name
+      end
     end
 
     action = nil
@@ -344,5 +364,7 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
              "Use acts_as_state_machine.  Assumes --include-activation") { |v| options[:include_activation] = options[:stateful] = true }
       opt.on("--rspec",
              "Force rspec mode (checks for RAILS_ROOT/spec by default)") { |v| options[:rspec] = true }
+      opt.on("--ldap-capable",
+             "Allow user authentication by local password AND ldap") { |v| options[:ldap_capable] = true }
     end
 end

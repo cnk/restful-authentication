@@ -10,7 +10,7 @@ class <%= migration_name %> < ActiveRecord::Migration
       t.column :base_dn,              :string
       t.column :scope,                :string,  :default => "sub"
       t.column :object_class,         :string,  :default => "inetOrgPerson"
-      t.column :login_attribute,      :string,  :default => "cn"
+      t.column :login_attribute,      :string,  :default => "uid"
       t.column :email_attribute,      :string,  :default => "mail"
       t.column :given_name_attribute, :string,  :default => "givenName"
       t.column :surname_attribute,    :string,  :default => "sn"
