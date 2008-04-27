@@ -2,7 +2,7 @@ class <%= server_controller_class_name %>Controller < ApplicationController
   
   include AuthenticatedSystem
   
-  # before_filter :login_required
+  before_filter :login_required
 
   layout "authenticated"
 

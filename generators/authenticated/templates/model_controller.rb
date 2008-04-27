@@ -2,7 +2,7 @@ class <%= model_controller_class_name %>Controller < ApplicationController
   # Be sure to include AuthenticationSystem in Application Controller instead
   include AuthenticatedSystem
 
-  # before_filter :login_required, :except => [ :new, :create ]
+  before_filter :login_required, :except => [ :new, :create ]
 
   layout "authenticated"
 
@@ -102,15 +102,5 @@ protected
     @<%= file_name %> = <%= class_name %>.find(params[:id])
   end
 <% end %>
-
-  def authorized?                                                
-    # Allow <%= file_name %> to edit their own data 
-    if ['edit', 'update', 'show'].include?(params[:action]) && params[:id].to_i == current_<%= file_name %>.id 
-      authorized = true                             
-    else 
-      authorized = false 
-    end 
-    authorized 
-  end 
 
 end
