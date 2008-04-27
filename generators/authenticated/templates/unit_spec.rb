@@ -167,7 +167,7 @@ describe <%= class_name %> do
 <% end %>
 protected
   def create_<%= file_name %>(options = {})
-    record = <%= class_name %>.new({ :login => 'quire', :email => 'quire@example.com', :password => 'quire', :password_confirmation => 'quire' }.merge(options))
+    record = <%= class_name %>.new({ :login => 'quire', :email => 'quire@example.com', :given_name => 'Squire', :surname => 'Quire', :password => 'quire', :password_confirmation => 'quire' }.merge(options))
     record.<% if options[:stateful] %>register! if record.valid?<% else %>save<% end %>
     record
   end

@@ -80,7 +80,6 @@ describe <%= model_controller_class_name %>Controller do
   end<% end %>
   
   def create_<%= file_name %>(options = {})
-    post :create, :<%= file_name %> => { :login => 'quire', :email => 'quire@example.com',
-      :password => 'quire', :password_confirmation => 'quire' }.merge(options)
+      post :create, :<%= file_name %> => { :login => 'quire', :email => 'quire@example.com', :given_name => 'Squire', :surname => 'Quire', :password => 'quire', :password_confirmation => 'quire' }.merge(options)
   end
 end
