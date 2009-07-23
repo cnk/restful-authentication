@@ -9,7 +9,7 @@ require '<%= server_controller_file_path %>_controller'
 # Re-raise errors caught by the controller.
 class <%= server_controller_class_name %>Controller; def rescue_action(e) raise e end; end
 
-class <%= server_controller_class_name %>ControllerTest < Test::Unit::TestCase
+class <%= server_controller_class_name %>ControllerTest < ActionController::TestCase
   fixtures :<%= server_plural_name %>, :<%= model_controller_plural_name %>
 
   def setup
